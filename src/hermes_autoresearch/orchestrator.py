@@ -543,6 +543,12 @@ class AutoresearchHarness:
 
     def _commit(self, message: str) -> None:
         subprocess.run(["git", "-C", str(self.repo_root), "add", "-A"], check=True)
+        staged = subprocess.run(
+            ["git", "-C", str(self.repo_root), "diff", "--cached", "--quiet"],
+            check=False,
+        )
+        if staged.returncode == 0:
+            return
         subprocess.run(["git", "-C", str(self.repo_root), "commit", "-m", message], check=True)
 
     def _record(

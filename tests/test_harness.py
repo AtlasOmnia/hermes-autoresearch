@@ -65,6 +65,42 @@ def test_keep_and_revert_paths_and_logs(tmp_path: Path):
     assert len(jsonl) == 2
 
 
+def test_noop_accepted_trial_does_not_attempt_empty_commit(tmp_path: Path):
+    _init_repo(tmp_path)
+    (tmp_path / ".gitignore").write_text("runs/\n")
+    subprocess.run(["git", "-C", str(tmp_path), "add", ".gitignore"], check=True)
+    subprocess.run(["git", "-C", str(tmp_path), "commit", "-q", "-m", "ignore logs"], check=True)
+    proposal = _write_cmd_script(tmp_path / "proposal.py", "print('no changes')\n")
+    evaluator = _write_cmd_script(
+        tmp_path / "evaluator.py",
+        "import json\nprint(json.dumps({'score': 1.0, 'accepted': True, 'reason': 'benchmark'}))\n",
+    )
+    before = subprocess.run(
+        ["git", "-C", str(tmp_path), "rev-parse", "HEAD"],
+        text=True,
+        stdout=subprocess.PIPE,
+        check=True,
+    ).stdout.strip()
+    cfg = AutoresearchConfig(
+        repo_path=str(tmp_path),
+        proposal_command=["python3", str(proposal)],
+        evaluator_command=["python3", str(evaluator)],
+        max_trials=1,
+        allowlist_relative_paths=["."],
+        tsv_log_path="runs/experiments.tsv",
+        jsonl_log_path="runs/experiments.jsonl",
+    )
+    result = AutoresearchHarness(cfg).run()
+    after = subprocess.run(
+        ["git", "-C", str(tmp_path), "rev-parse", "HEAD"],
+        text=True,
+        stdout=subprocess.PIPE,
+        check=True,
+    ).stdout.strip()
+    assert result["trials"][0]["status"] == "kept"
+    assert before == after
+
+
 def test_disallowlist_reverts(tmp_path: Path):
     _init_repo(tmp_path)
     (tmp_path / "safe").mkdir()

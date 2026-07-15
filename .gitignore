@@ -7,6 +7,18 @@ __pycache__/
 .venv/
 venv/
 
+# Local environment and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p8
+*.p12
+*.mobileprovision
+credentials.json
+secrets.json
+
 # Test/cache artifacts
 tmp/
 *.tmp

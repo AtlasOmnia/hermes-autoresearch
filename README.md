@@ -15,10 +15,30 @@ What it provides
 No `program.md` is included in this repository. You will supply your own proposal/evaluation
 program later.
 
+Safety notice
+-------------
+
+This harness executes the proposal and evaluator commands you configure with the permissions
+of your current user. Only run trusted commands against repositories you are prepared to
+modify. The path allowlist checks repository changes after each command finishes; it is a
+keep/revert control, not an operating-system sandbox. It does not prevent network access or
+writes outside the target repository.
+
+Installation
+------------
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install .
+```
+
 Quick start
 1. Configure your proposal and evaluator commands in a JSON config.
 2. Keep your project repository clean before running.
-3. Run the harness.
+3. Create or switch to a dedicated experiment branch.
+4. Ensure `runs/` is ignored by the target repository.
+5. Run the harness.
 
 Example config
 -------------
@@ -87,6 +107,12 @@ Logging
 - JSONL: `runs/experiments.jsonl`
 
 Each row includes status/decision, score, best_score, reason, elapsed_ms, changed paths.
+
+Accepted improvements are committed locally to the target repository's currently checked-out
+branch with messages such as `autoresearch: accept trial 3 score=12.5`. The harness never
+creates a branch or pushes commits. Rejected trials are reverted when the corresponding revert
+setting is enabled. Because accepted trials are staged with `git add -A`, the target repository
+should ignore `runs/` if experiment logs must remain outside commits.
 
 Testing
 -------

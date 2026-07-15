@@ -1,8 +1,10 @@
 Hermes Autoresearch Harness
 ===========================
 
-A reusable, provider-agnostic Python harness for iterative experiment loops with strict
-keep/revert controls.
+Hermes Autoresearch repeatedly lets an agent change a Git repository, measures whether each
+change improved a score, and automatically keeps good changes as local commits or reverts the
+rest. It is a reusable control loop for testing code, configuration, prompts, or other
+repository-based experiments without automatically pushing anything to GitHub.
 
 How it works
 ------------

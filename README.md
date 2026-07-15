@@ -4,6 +4,11 @@ Hermes Autoresearch Harness
 A reusable, provider-agnostic Python harness for iterative experiment loops with strict
 keep/revert controls.
 
+How it works
+------------
+
+![Diagram showing the proposal, path inspection, evaluation, keep-or-revert decision, local commit, and experiment logging loop](docs/images/autoresearch-loop.svg)
+
 What it provides
 - Proposal loop with configurable commands (provider/agent-command agnostic)
 - Evaluator contract parsing (JSON in stdout)

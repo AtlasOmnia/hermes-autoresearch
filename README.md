@@ -132,8 +132,64 @@ You should see pass/fail output and fixture-backed proofs of:
 - kept vs reverted trials
 - allowlist enforcement
 
+Trial contract pattern
+----------------------
+
+For agent-based proposals, the repository ships a reusable trial contract at
+`contracts/trial_contract.md`. It requires the proposal agent to:
+
+- pursue exactly one hypothesis per trial
+- modify only the stated allowlisted paths
+- leave changes uncommitted for the evaluator
+- exit nonzero when blocked
+- never pursue a second hypothesis in the same trial
+
+`examples/proposal_wrapper_example.py` combines that contract with the harness-provided trial
+metadata, an explicit objective, and the allowed paths. It then appends the resulting prompt to a
+configurable argv prefix and executes it directly without a shell.
+
+The wrapper requires two caller-supplied environment variables:
+
+- `AGENT_COMMAND_JSON`: a nonempty JSON array containing the agent command before its prompt
+- `TRIAL_ALLOWED_PATHS`: a human-readable path list that must mirror
+  `allowlist_relative_paths` in the harness JSON configuration
+
+For Hermes, `hermes chat -q` accepts the prompt as its final argument:
+
+```bash
+export AR_TRIAL=1
+export AR_REPO_PATH="$(pwd)"
+export AR_PREVIOUS_SCORE=""
+export AGENT_COMMAND_JSON='["hermes", "chat", "-q"]'
+export TRIAL_ALLOWED_PATHS=$'src/\ntests/'
+
+python3 examples/proposal_wrapper_example.py \
+  "Improve one measured behavior without changing the public API"
+```
+
+In a harness configuration, use the wrapper as the proposal command; the harness supplies
+`AR_TRIAL`, `AR_REPO_PATH`, and `AR_PREVIOUS_SCORE` automatically:
+
+```json
+{
+  "proposal_command": [
+    "python3",
+    "/path/to/proposal_wrapper_example.py",
+    "Improve one measured behavior without changing the public API"
+  ],
+  "allowlist_relative_paths": ["src", "tests"]
+}
+```
+
+The wrapper is provider-agnostic: substitute any CLI whose argv prefix accepts the prompt as its
+final argument. It does not hard-code a model, profile, endpoint, or credential. The harness's
+configured allowlist remains the enforcement boundary; `TRIAL_ALLOWED_PATHS` gives the agent the
+same scope in its prompt and must be kept aligned with that configuration.
+
 Why provider-agnostic
 ---------------------
 
 The harness treats proposal/evaluator as arbitrary shell commands. That makes it compatible with
-Hermes, Claude, Codex, or any agent runtime without hard-coding provider APIs.
+Hermes, Claude, Codex, or any agent runtime without hard-coding provider APIs. The trial contract
+and wrapper extend this principle to the prompt layer: the same contract works regardless of which
+agent backend you run.

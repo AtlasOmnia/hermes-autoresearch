@@ -37,4 +37,3 @@ The following environment variables are set for this trial:
 
 The user's objective for this trial is provided below. Focus your changes on that single
 hypothesis only.
-

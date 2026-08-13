@@ -1,3 +1,5 @@
+> **Moved** — this project is now part of the [hermes-loops](https://github.com/AtlasOmnia/hermes-loops) monorepo, under `autoresearch/`. This repository is archived and read-only.
+
 Hermes Autoresearch Harness
 ===========================
 
